@@ -17,7 +17,8 @@ const (
 
 // Client is an interface for an ESPN API client
 type Client interface {
-	GetRoster(ctx context.Context, teamID string) (RosterResponse, error)
+	GetRoster(ctx context.Context, teamID TeamID) (RosterResponse, error)
+	GetTeams(ctx context.Context) (TeamsResponse, error)
 }
 
 type ClientConfiguration struct {
@@ -48,29 +49,84 @@ type clientImpl struct {
 
 var _ Client = &clientImpl{}
 
-func (c *clientImpl) GetRoster(ctx context.Context, teamID string) (RosterResponse, error) {
+func (c *clientImpl) GetRoster(ctx context.Context, teamID TeamID) (RosterResponse, error) {
 	url := fmt.Sprintf("%s/teams/%s/roster", c.siteAPIURL, teamID)
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	var roster RosterResponse
+	if err := c.doHTTPRequest(ctx, url, http.MethodGet, &roster); err != nil {
+		return RosterResponse{}, fmt.Errorf("getting roster: %w", err)
+	}
+	return roster, nil
+}
+
+func (c *clientImpl) GetTeams(ctx context.Context) (TeamsResponse, error) {
+	url := fmt.Sprintf("%s/teams", c.siteAPIURL)
+	var teams TeamsResponse
+	if err := c.doHTTPRequest(ctx, url, http.MethodGet, &teams); err != nil {
+		return TeamsResponse{}, fmt.Errorf("getting teams: %w", err)
+	}
+	return teams, nil
+}
+
+func (c *clientImpl) doHTTPRequest(ctx context.Context, url string, method string, respDataPointer interface{}) error {
+	req, err := http.NewRequestWithContext(ctx, method, url, nil)
 	if err != nil {
-		return RosterResponse{}, fmt.Errorf("creating request: %w", err)
+		return fmt.Errorf("creating request: %w", err)
 	}
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return RosterResponse{}, fmt.Errorf("making request: %w", err)
+		return fmt.Errorf("making request: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		return RosterResponse{}, fmt.Errorf("unexpected status code: %d, body: %s", resp.StatusCode, body)
+		return fmt.Errorf("unexpected status code: %d, body: %s", resp.StatusCode, body)
 	}
 
-	var roster RosterResponse
-	if err := json.NewDecoder(resp.Body).Decode(&roster); err != nil {
-		return RosterResponse{}, fmt.Errorf("decoding response: %w", err)
+	if err := json.NewDecoder(resp.Body).Decode(respDataPointer); err != nil {
+		return fmt.Errorf("decoding response: %w", err)
 	}
 
-	return roster, nil
+	return nil
+}
+
+type TeamsResponse struct {
+	Sports []SportTeams `json:"sports"`
+}
+
+type SportTeams struct {
+	ID      string              `json:"id"`
+	UID     string              `json:"uid"`
+	Name    string              `json:"name"`
+	Slug    string              `json:"slug"`
+	Leagues []SportsLeagueTeams `json:"leagues"`
+}
+
+type SportsLeagueTeams struct {
+	ID           string `json:"id"`
+	UID          string `json:"uid"`
+	Name         string `json:"name"`
+	Abbreviation string `json:"abbreviation"`
+	ShortName    string `json:"shortName"`
+	Slug         string `json:"slug"`
+	Teams        []Team `json:"teams"`
+}
+
+type Team struct {
+	Team TeamInfo `json:"team"`
+}
+
+type TeamInfo struct {
+	ID               string `json:"id"`
+	UID              string `json:"uid"`
+	Slug             string `json:"slug"`
+	Abbreviation     string `json:"abbreviation"`
+	DisplayName      string `json:"displayName"`
+	ShortDisplayName string `json:"shortDisplayName"`
+	Name             string `json:"name"`
+	Nickname         string `json:"nickname"`
+	Location         string `json:"location"`
+	Color            string `json:"color"`
 }
 
 type RosterResponse struct {

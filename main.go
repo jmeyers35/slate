@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/jmeyers35/slate/pkg/espn/client"
+	"github.com/jmeyers35/slate/pkg/espn/client/nfl"
 	"go.uber.org/zap"
 )
 
@@ -12,7 +13,7 @@ func main() {
 	nflClient := client.NewNFL()
 	ll, _ := zap.NewProduction()
 
-	resp, err := nflClient.GetRoster(ctx, "4")
+	resp, err := nflClient.GetRoster(ctx, nfl.TeamIDPhiladelphiaEagles)
 	if err != nil {
 		ll.Error("error getting roster", zap.Error(err))
 		return
