@@ -19,6 +19,7 @@ func ScrapeNFLTeam(ctx workflow.Context, request ScrapeNFLTeamRequest) error {
 	logger := workflow.GetLogger(ctx)
 	actx := workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
 		ScheduleToCloseTimeout: 30 * time.Second,
+		StartToCloseTimeout:    5 * time.Second,
 	})
 
 	var espnActivities *ESPNActivities

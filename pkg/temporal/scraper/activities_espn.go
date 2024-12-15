@@ -52,3 +52,26 @@ func (a *ESPNActivities) GetTeam(ctx context.Context, in GetTeamRequest) (GetTea
 		Team: team,
 	}, nil
 }
+
+type GetTeamsRequest struct{}
+
+type GetTeamsResponse struct {
+	Teams []espnclient.Team
+}
+
+func (a *ESPNActivities) GetTeams(ctx context.Context, in GetTeamsRequest) (GetTeamsResponse, error) {
+	teamsResp, err := a.client.GetTeams(ctx)
+	if err != nil {
+		return GetTeamsResponse{}, fmt.Errorf("getting teams: %w", err)
+	}
+
+	var teams []espnclient.Team
+	for _, sport := range teamsResp.Sports {
+		for _, league := range sport.Leagues {
+			teams = append(teams, league.Teams...)
+		}
+	}
+	return GetTeamsResponse{
+		Teams: teams,
+	}, nil
+}
