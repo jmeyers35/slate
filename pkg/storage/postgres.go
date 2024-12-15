@@ -13,6 +13,34 @@ func NewPostgres(db *sql.DB) Storage {
 	return &postgresStorage{db: db}
 }
 
+func (s *postgresStorage) GetTeams(ctx context.Context) ([]*Team, error) {
+	const query = `
+		SELECT team_id, team_code, team_name, espn_id
+		FROM teams`
+
+	rows, err := s.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var teams []*Team
+	for rows.Next() {
+		team := &Team{}
+		err := rows.Scan(
+			&team.ID,
+			&team.TeamCode,
+			&team.Name,
+			&team.ESPNID,
+		)
+		if err != nil {
+			return nil, err
+		}
+		teams = append(teams, team)
+	}
+	return teams, nil
+}
+
 func (s *postgresStorage) GetTeamByESPNID(ctx context.Context, espnID string) (*Team, error) {
 	const query = `
 		SELECT team_id, team_code, team_name, espn_id 
