@@ -2,6 +2,7 @@ CREATE TABLE teams (
     team_id SERIAL PRIMARY KEY,
     team_code VARCHAR(5) UNIQUE NOT NULL,
     team_name VARCHAR(100) NOT NULL,
+    espn_id VARCHAR(50) UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -10,6 +11,7 @@ CREATE TABLE players (
     name VARCHAR(100) NOT NULL,
     position VARCHAR(5) NOT NULL,
     team_id INTEGER REFERENCES teams(team_id),
+    espn_id VARCHAR(50) UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -106,3 +108,5 @@ CREATE INDEX idx_draftkings_players_week_season ON draftkings_players(week, seas
 CREATE INDEX idx_games_week_season ON games(week, season);
 CREATE INDEX idx_players_team ON players(team_id);
 CREATE INDEX idx_games_teams ON games(home_team_id, away_team_id);
+CREATE INDEX idx_teams_espn_id ON teams(espn_id);
+CREATE INDEX idx_players_espn_id ON players(espn_id);
