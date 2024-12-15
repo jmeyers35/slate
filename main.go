@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/jmeyers35/slate/config"
+	slatedb "github.com/jmeyers35/slate/db"
+	"github.com/jmeyers35/slate/pkg/storage"
 	slatetemporal "github.com/jmeyers35/slate/pkg/temporal"
 	"github.com/jmeyers35/slate/pkg/temporal/scraper"
 	"go.temporal.io/sdk/client"
@@ -32,7 +34,9 @@ func main() {
 	defer c.Close()
 
 	scraperWorker := worker.New(c, slatetemporal.DefaultTaskQueueName, worker.Options{})
-	scraper.InitWorker(scraperWorker)
+	db, err := slatedb.InitDB(appConfig)
+	storage := storage.NewPostgres(db)
+	scraper.InitWorker(scraperWorker, storage)
 
 	err = scraperWorker.Run(worker.InterruptCh())
 	if err != nil {
