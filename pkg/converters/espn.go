@@ -10,7 +10,7 @@ type ESPNAPIConverter struct{}
 func (c ESPNAPIConverter) ConvertTeam(team espnclient.Team) storage.Team {
 	return storage.Team{
 		ESPNID:   team.Team.ID,
-		Name:     team.Team.Name,
+		Name:     team.Team.DisplayName,
 		TeamCode: team.Team.Abbreviation,
 	}
 }

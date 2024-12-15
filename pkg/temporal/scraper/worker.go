@@ -1,7 +1,6 @@
 package scraper
 
 import (
-	"github.com/jmeyers35/slate/pkg/converters"
 	espnclient "github.com/jmeyers35/slate/pkg/espn/client"
 	"github.com/jmeyers35/slate/pkg/storage"
 	"go.temporal.io/sdk/worker"
@@ -18,8 +17,7 @@ func InitWorker(w worker.Worker, storage storage.Storage) {
 	w.RegisterActivity(espnActivities.GetTeam)
 
 	storageActivities := &StorageActivities{
-		Storage:   storage,
-		Converter: converters.ESPNAPIConverter{},
+		Storage: storage,
 	}
 	w.RegisterActivity(storageActivities.UpsertTeam)
 	w.RegisterActivity(storageActivities.GetTeamByESPNID)

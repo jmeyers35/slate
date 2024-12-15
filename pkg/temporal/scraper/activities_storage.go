@@ -3,13 +3,11 @@ package scraper
 import (
 	"context"
 
-	"github.com/jmeyers35/slate/pkg/converters"
 	"github.com/jmeyers35/slate/pkg/storage"
 )
 
 type StorageActivities struct {
-	Storage   storage.Storage
-	Converter converters.ESPNAPIConverter
+	Storage storage.Storage
 }
 
 type UpsertTeamRequest struct {

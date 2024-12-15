@@ -8,6 +8,7 @@ import (
 	"github.com/jmeyers35/slate/pkg/storage"
 	slatetemporal "github.com/jmeyers35/slate/pkg/temporal"
 	"github.com/jmeyers35/slate/pkg/temporal/scraper"
+	_ "github.com/lib/pq"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
 	"go.uber.org/zap"
@@ -35,6 +36,10 @@ func main() {
 
 	scraperWorker := worker.New(c, slatetemporal.DefaultTaskQueueName, worker.Options{})
 	db, err := slatedb.InitDB(appConfig)
+	if err != nil {
+		logger.Error("initializing database", zap.Error(err))
+		return
+	}
 	storage := storage.NewPostgres(db)
 	scraper.InitWorker(scraperWorker, storage)
 

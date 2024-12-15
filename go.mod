@@ -4,6 +4,7 @@ go 1.23.4
 
 require (
 	github.com/kelseyhightower/envconfig v1.4.0
+	github.com/lib/pq v1.10.9
 	go.temporal.io/sdk v1.31.0
 	go.uber.org/zap v1.27.0
 )
