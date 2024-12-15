@@ -17,6 +17,7 @@ const (
 type Client interface {
 	GetRoster(ctx context.Context, teamID TeamID) (RosterResponse, error)
 	GetTeams(ctx context.Context) (TeamsResponse, error)
+	GetTeam(ctx context.Context, teamID TeamID) (Team, error)
 }
 
 func New(config ClientConfiguration) Client {
@@ -58,6 +59,15 @@ func (c *clientImpl) GetTeams(ctx context.Context) (TeamsResponse, error) {
 		return TeamsResponse{}, fmt.Errorf("getting teams: %w", err)
 	}
 	return teams, nil
+}
+
+func (c *clientImpl) GetTeam(ctx context.Context, teamID TeamID) (Team, error) {
+	url := fmt.Sprintf("%s/teams/%s", c.siteAPIURL, teamID)
+	var team Team
+	if err := c.doHTTPRequest(ctx, url, http.MethodGet, &team); err != nil {
+		return Team{}, fmt.Errorf("getting team: %w", err)
+	}
+	return team, nil
 }
 
 func (c *clientImpl) doHTTPRequest(ctx context.Context, url string, method string, respDataPointer interface{}) error {

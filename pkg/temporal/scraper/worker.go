@@ -15,6 +15,7 @@ func InitWorker(w worker.Worker, storage storage.Storage) {
 		client: nflClient,
 	}
 	w.RegisterActivity(espnActivities.GetPlayersForTeam)
+	w.RegisterActivity(espnActivities.GetTeam)
 
 	storageActivities := &StorageActivities{
 		Storage:   storage,
