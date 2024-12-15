@@ -128,6 +128,7 @@ func (ct *Time) UnmarshalJSON(b []byte) error {
 	formats := []string{
 		"2006-01-02T07:00Z",
 		"2006-01-02T15:04Z",
+		"2006-01-02T15:04:05Z",
 	}
 
 	var lastErr error
