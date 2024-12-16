@@ -15,7 +15,7 @@ func (c ESPNAPIConverter) ConvertTeam(team espnclient.Team) storage.Team {
 	}
 }
 
-func (c ESPNAPIConverter) ConvertAthlete(athlete espnclient.Athlete, teamID int) storage.Player {
+func (c ESPNAPIConverter) ConvertAthlete(athlete espnclient.Athlete, teamID string) storage.Player {
 	return storage.Player{
 		ESPNID:   athlete.ID,
 		Name:     athlete.FullName,

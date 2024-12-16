@@ -8,9 +8,9 @@ type Team struct {
 }
 
 type Player struct {
-	ID       int
+	ID       string
 	Name     string
 	Position string
-	TeamID   int
+	TeamID   string
 	ESPNID   string
 }

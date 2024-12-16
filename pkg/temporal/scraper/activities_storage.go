@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/jmeyers35/slate/pkg/storage"
 )
@@ -32,4 +33,20 @@ type UpsertPlayerRequest struct {
 
 func (a *StorageActivities) UpsertPlayer(ctx context.Context, req UpsertPlayerRequest) error {
 	return a.Storage.UpsertPlayer(ctx, &req.Player)
+}
+
+type GetTeamsFromStorageRequest struct{}
+
+type GetTeamsFromStorageResponse struct {
+	Teams []*storage.Team
+}
+
+func (a *StorageActivities) GetTeams(ctx context.Context, req GetTeamsRequest) (GetTeamsFromStorageResponse, error) {
+	teams, err := a.Storage.GetTeams(ctx)
+	if err != nil {
+		return GetTeamsFromStorageResponse{}, fmt.Errorf("getting teams: %w", err)
+	}
+	return GetTeamsFromStorageResponse{
+		Teams: teams,
+	}, nil
 }

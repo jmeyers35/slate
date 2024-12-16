@@ -75,3 +75,21 @@ func (a *ESPNActivities) GetTeams(ctx context.Context, in GetTeamsRequest) (GetT
 		Teams: teams,
 	}, nil
 }
+
+type GetPlayerRequest struct {
+	PlayerID string
+}
+
+type GetPlayerResponse struct {
+	Player espnclient.Athlete
+}
+
+func (a *ESPNActivities) GetPlayer(ctx context.Context, in GetPlayerRequest) (GetPlayerResponse, error) {
+	player, err := a.client.GetPlayer(ctx, in.PlayerID)
+	if err != nil {
+		return GetPlayerResponse{}, fmt.Errorf("getting player: %w", err)
+	}
+	return GetPlayerResponse{
+		Player: player,
+	}, nil
+}

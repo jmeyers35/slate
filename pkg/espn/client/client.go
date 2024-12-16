@@ -18,6 +18,7 @@ type Client interface {
 	GetRoster(ctx context.Context, teamID TeamID) (RosterResponse, error)
 	GetTeams(ctx context.Context) (TeamsResponse, error)
 	GetTeam(ctx context.Context, teamID TeamID) (Team, error)
+	GetPlayer(ctx context.Context, playerID string) (Athlete, error)
 }
 
 func New(config ClientConfiguration) Client {
@@ -68,6 +69,15 @@ func (c *clientImpl) GetTeam(ctx context.Context, teamID TeamID) (Team, error) {
 		return Team{}, fmt.Errorf("getting team: %w", err)
 	}
 	return team, nil
+}
+
+func (c *clientImpl) GetPlayer(ctx context.Context, playerID string) (Athlete, error) {
+	url := fmt.Sprintf("%s/athletes/%s", c.coreAPIURL, playerID)
+	var player Athlete
+	if err := c.doHTTPRequest(ctx, url, http.MethodGet, &player); err != nil {
+		return Athlete{}, fmt.Errorf("getting player: %w", err)
+	}
+	return player, nil
 }
 
 func (c *clientImpl) doHTTPRequest(ctx context.Context, url string, method string, respDataPointer interface{}) error {
