@@ -59,7 +59,7 @@ type GetTeamsResponse struct {
 	Teams []espnclient.Team
 }
 
-func (a *ESPNActivities) GetTeams(ctx context.Context, in GetTeamsRequest) (GetTeamsResponse, error) {
+func (a *ESPNActivities) GetTeamsFromESPN(ctx context.Context, in GetTeamsRequest) (GetTeamsResponse, error) {
 	teamsResp, err := a.client.GetTeams(ctx)
 	if err != nil {
 		return GetTeamsResponse{}, fmt.Errorf("getting teams: %w", err)

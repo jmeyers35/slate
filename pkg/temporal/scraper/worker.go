@@ -19,7 +19,7 @@ func InitWorker(w worker.Worker, storage storage.Storage) {
 	}
 	w.RegisterActivity(espnActivities.GetPlayersForTeam)
 	w.RegisterActivity(espnActivities.GetTeam)
-	w.RegisterActivity(espnActivities.GetTeams)
+	w.RegisterActivity(espnActivities.GetTeamsFromESPN)
 	w.RegisterActivity(espnActivities.GetPlayer)
 
 	storageActivities := &StorageActivities{
@@ -28,5 +28,5 @@ func InitWorker(w worker.Worker, storage storage.Storage) {
 	w.RegisterActivity(storageActivities.UpsertTeam)
 	w.RegisterActivity(storageActivities.GetTeamByESPNID)
 	w.RegisterActivity(storageActivities.UpsertPlayer)
-	w.RegisterActivity(storageActivities.GetTeams)
+	w.RegisterActivity(storageActivities.GetTeamsFromStorage)
 }

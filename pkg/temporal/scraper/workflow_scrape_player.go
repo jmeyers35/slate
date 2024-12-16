@@ -15,6 +15,7 @@ type ScrapePlayerRequest struct {
 
 func ScrapePlayer(ctx workflow.Context, request ScrapePlayerRequest) error {
 	var espnActivities *ESPNActivities
+	logger := workflow.GetLogger(ctx)
 
 	actx := workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
 		ScheduleToCloseTimeout: 30 * time.Second,
@@ -22,12 +23,16 @@ func ScrapePlayer(ctx workflow.Context, request ScrapePlayerRequest) error {
 	})
 
 	var getPlayerResponse GetPlayerResponse
-	if err := workflow.ExecuteActivity(actx, espnActivities.GetPlayer, GetPlayerRequest{}).Get(ctx, &getPlayerResponse); err != nil {
+	if err := workflow.ExecuteActivity(actx, espnActivities.GetPlayer, GetPlayerRequest{
+		PlayerID: request.PlayerESPNID,
+	}).Get(ctx, &getPlayerResponse); err != nil {
 		return fmt.Errorf("getting player: %w", err)
 	}
+	logger.Info("Got player", "player", getPlayerResponse.Player)
 
 	converter := converters.ESPNAPIConverter{}
 	converted := converter.ConvertAthlete(getPlayerResponse.Player, request.TeamID)
+	logger.Info("Converted player", "player", converted)
 
 	var storageActivities *StorageActivities
 	if err := workflow.ExecuteActivity(actx, storageActivities.UpsertPlayer, UpsertPlayerRequest{

@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/jmeyers35/slate/pkg/espn/client"
 	"go.temporal.io/sdk/workflow"
@@ -17,7 +18,11 @@ func ScrapePlayersForTeam(ctx workflow.Context, request ScrapePlayersForTeamRequ
 	var espnActivities *ESPNActivities
 
 	var playersResponse GetPlayersForTeamResponse
-	if err := workflow.ExecuteActivity(ctx, espnActivities.GetPlayersForTeam, GetPlayersForTeamRequest{
+	actx := workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
+		ScheduleToCloseTimeout: 1 * time.Minute,
+		StartToCloseTimeout:    10 * time.Second,
+	})
+	if err := workflow.ExecuteActivity(actx, espnActivities.GetPlayersForTeam, GetPlayersForTeamRequest{
 		TeamID: request.TeamID,
 	}).Get(ctx, &playersResponse); err != nil {
 		return fmt.Errorf("getting players for team: %w", err)
@@ -35,8 +40,8 @@ func ScrapePlayersForTeam(ctx workflow.Context, request ScrapePlayersForTeamRequ
 
 	for _, future := range futures {
 		if err := future.Get(ctx, nil); err != nil {
-			multierr.Append(allErrors, err)
+			allErrors = multierr.Append(allErrors, err)
 		}
 	}
-	return nil
+	return allErrors
 }

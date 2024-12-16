@@ -18,7 +18,7 @@ func BackfillTeams(ctx workflow.Context, request BackfillTeamsRequest) error {
 		ScheduleToCloseTimeout: 1 * time.Minute,
 		StartToCloseTimeout:    10 * time.Second,
 	})
-	if err := workflow.ExecuteActivity(actx, espnActivities.GetTeams, GetTeamsRequest{}).Get(ctx, &resp); err != nil {
+	if err := workflow.ExecuteActivity(actx, espnActivities.GetTeamsFromESPN, GetTeamsRequest{}).Get(ctx, &resp); err != nil {
 		return fmt.Errorf("getting teams: %w", err)
 	}
 

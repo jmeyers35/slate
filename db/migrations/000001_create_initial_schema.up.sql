@@ -9,7 +9,7 @@ CREATE TABLE teams (
 CREATE TABLE players (
     player_id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    position VARCHAR(5) NOT NULL,
+    position VARCHAR(50) NOT NULL,
     team_id INTEGER REFERENCES teams(team_id),
     espn_id VARCHAR(50) UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

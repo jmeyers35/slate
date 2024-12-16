@@ -41,7 +41,7 @@ type GetTeamsFromStorageResponse struct {
 	Teams []*storage.Team
 }
 
-func (a *StorageActivities) GetTeams(ctx context.Context, req GetTeamsRequest) (GetTeamsFromStorageResponse, error) {
+func (a *StorageActivities) GetTeamsFromStorage(ctx context.Context, req GetTeamsRequest) (GetTeamsFromStorageResponse, error) {
 	teams, err := a.Storage.GetTeams(ctx)
 	if err != nil {
 		return GetTeamsFromStorageResponse{}, fmt.Errorf("getting teams: %w", err)
