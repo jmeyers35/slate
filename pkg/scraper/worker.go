@@ -3,12 +3,14 @@ package scraper
 import (
 	espnactivities "github.com/jmeyers35/slate/pkg/espn/activities"
 	espnclient "github.com/jmeyers35/slate/pkg/espn/client"
+	oddsactivities "github.com/jmeyers35/slate/pkg/odds/activities"
+	oddsclient "github.com/jmeyers35/slate/pkg/odds/client"
 	"github.com/jmeyers35/slate/pkg/storage"
 	storageactivities "github.com/jmeyers35/slate/pkg/storage/activities"
 	"go.temporal.io/sdk/worker"
 )
 
-func InitWorker(w worker.Worker, storage storage.Storage) {
+func InitWorker(w worker.Worker, storage storage.Storage, oddsClient oddsclient.Client) {
 	w.RegisterWorkflow(ScrapeNFLTeam)
 	w.RegisterWorkflow(BackfillTeams)
 	w.RegisterWorkflow(PlayerCoordinator)
@@ -35,4 +37,11 @@ func InitWorker(w worker.Worker, storage storage.Storage) {
 	w.RegisterActivity(storageActivities.UpsertPlayer)
 	w.RegisterActivity(storageActivities.GetTeamsFromStorage)
 	w.RegisterActivity(storageActivities.StoreGames)
+
+	oddsActivities := &oddsactivities.OddsActivities{
+		Client: oddsClient,
+	}
+	w.RegisterActivity(oddsActivities.GetCurrentLines)
+	w.RegisterActivity(oddsActivities.GetGameID)
+	w.RegisterActivity(oddsActivities.GetLineHistory)
 }

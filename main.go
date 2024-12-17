@@ -5,6 +5,7 @@ import (
 
 	"github.com/jmeyers35/slate/config"
 	slatedb "github.com/jmeyers35/slate/db"
+	oddsclient "github.com/jmeyers35/slate/pkg/odds/client"
 	"github.com/jmeyers35/slate/pkg/scraper"
 	"github.com/jmeyers35/slate/pkg/storage"
 	_ "github.com/lib/pq"
@@ -40,7 +41,14 @@ func main() {
 		return
 	}
 	storage := storage.NewPostgres(db)
-	scraper.InitWorker(scraperWorker, storage)
+
+	oddsClient, err := oddsclient.New(oddsclient.Config{}) // TODO: actually initialize with API key, etc
+	if err != nil {
+		logger.Error("creating odds client", zap.Error(err))
+		return
+	}
+
+	scraper.InitWorker(scraperWorker, storage, oddsClient)
 
 	err = scraperWorker.Run(worker.InterruptCh())
 	if err != nil {

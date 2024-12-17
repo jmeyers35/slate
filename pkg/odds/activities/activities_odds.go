@@ -8,7 +8,7 @@ import (
 )
 
 type OddsActivities struct {
-	client client.Client
+	Client client.Client
 }
 
 type GetCurrentLinesRequest struct {
@@ -21,7 +21,7 @@ type GetCurrentLinesResponse struct {
 }
 
 func (a *OddsActivities) GetCurrentLines(ctx context.Context, in GetCurrentLinesRequest) (GetCurrentLinesResponse, error) {
-	lines, err := a.client.GetCurrentLines(ctx, in.Season, in.Week)
+	lines, err := a.Client.GetCurrentLines(ctx, in.Season, in.Week)
 	if err != nil {
 		return GetCurrentLinesResponse{}, fmt.Errorf("getting current lines: %w", err)
 	}
@@ -40,7 +40,7 @@ type GetGameIDResponse struct {
 }
 
 func (a *OddsActivities) GetGameID(ctx context.Context, in GetGameIDRequest) (GetGameIDResponse, error) {
-	providerID, err := a.client.GetGameID(ctx, in.InternalGameID)
+	providerID, err := a.Client.GetGameID(ctx, in.InternalGameID)
 	if err != nil {
 		return GetGameIDResponse{}, fmt.Errorf("getting provider game ID: %w", err)
 	}
@@ -59,7 +59,7 @@ type GetLineHistoryResponse struct {
 }
 
 func (a *OddsActivities) GetLineHistory(ctx context.Context, in GetLineHistoryRequest) (GetLineHistoryResponse, error) {
-	history, err := a.client.GetLineHistory(ctx, in.GameID)
+	history, err := a.Client.GetLineHistory(ctx, in.GameID)
 	if err != nil {
 		return GetLineHistoryResponse{}, fmt.Errorf("getting line history: %w", err)
 	}
