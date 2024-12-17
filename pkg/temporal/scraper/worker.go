@@ -12,6 +12,7 @@ func InitWorker(w worker.Worker, storage storage.Storage) {
 	w.RegisterWorkflow(PlayerCoordinator)
 	w.RegisterWorkflow(ScrapePlayersForTeam)
 	w.RegisterWorkflow(ScrapePlayer)
+	w.RegisterWorkflow(ScrapeSchedule)
 
 	nflClient := espnclient.NewNFL()
 	espnActivities := &ESPNActivities{
@@ -21,6 +22,7 @@ func InitWorker(w worker.Worker, storage storage.Storage) {
 	w.RegisterActivity(espnActivities.GetTeam)
 	w.RegisterActivity(espnActivities.GetTeamsFromESPN)
 	w.RegisterActivity(espnActivities.GetPlayer)
+	w.RegisterActivity(espnActivities.GetSchedule)
 
 	storageActivities := &StorageActivities{
 		Storage: storage,
@@ -29,4 +31,5 @@ func InitWorker(w worker.Worker, storage storage.Storage) {
 	w.RegisterActivity(storageActivities.GetTeamByESPNID)
 	w.RegisterActivity(storageActivities.UpsertPlayer)
 	w.RegisterActivity(storageActivities.GetTeamsFromStorage)
+	w.RegisterActivity(storageActivities.StoreGames)
 }

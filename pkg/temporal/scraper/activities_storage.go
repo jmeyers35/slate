@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/jmeyers35/slate/pkg/converters"
+	espnclient "github.com/jmeyers35/slate/pkg/espn/client"
 	"github.com/jmeyers35/slate/pkg/storage"
 )
 
@@ -49,4 +51,39 @@ func (a *StorageActivities) GetTeamsFromStorage(ctx context.Context, req GetTeam
 	return GetTeamsFromStorageResponse{
 		Teams: teams,
 	}, nil
+}
+
+// New game storage activity
+type StoreGamesRequest struct {
+	Schedule espnclient.ScheduleResponse
+	Week     int
+	Season   int
+}
+
+func (a *StorageActivities) StoreGames(ctx context.Context, req StoreGamesRequest) error {
+	converter := converters.ESPNAPIConverter{}
+
+	for _, event := range req.Schedule.Events {
+		game := converter.ConvertGame(event, req.Week, req.Season)
+
+		// Get team IDs from storage
+		homeTeam, err := a.Storage.GetTeamByESPNID(ctx, game.HomeTeamID)
+		if err != nil {
+			return fmt.Errorf("getting home team: %w", err)
+		}
+		
+		awayTeam, err := a.Storage.GetTeamByESPNID(ctx, game.AwayTeamID)
+		if err != nil {
+			return fmt.Errorf("getting away team: %w", err)
+		}
+
+		// Update with internal IDs
+		game.HomeTeamID = homeTeam.ID
+		game.AwayTeamID = awayTeam.ID
+
+		if err := a.Storage.UpsertGame(ctx, &game); err != nil {
+			return fmt.Errorf("upserting game: %w", err)
+		}
+	}
+	return nil
 }

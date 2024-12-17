@@ -23,3 +23,29 @@ func (c ESPNAPIConverter) ConvertAthlete(athlete espnclient.Athlete, teamID stri
 		TeamID:   teamID,
 	}
 }
+
+func (c ESPNAPIConverter) ConvertGame(event espnclient.Event, week, season int) storage.Game {
+	var homeTeamID, awayTeamID string
+	var dome bool
+
+	for _, competitor := range event.Competitions[0].Competitors {
+		if competitor.HomeAway == "home" {
+			homeTeamID = competitor.Team.ID
+		} else {
+			awayTeamID = competitor.Team.ID
+		}
+	}
+
+	if event.Venue.Indoor {
+		dome = true
+	}
+
+	return storage.Game{
+		Week:       week,
+		Season:     season,
+		GameDate:   event.Date.Time,
+		Dome:       dome,
+		HomeTeamID: homeTeamID,
+		AwayTeamID: awayTeamID,
+	}
+}

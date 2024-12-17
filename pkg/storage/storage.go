@@ -8,4 +8,6 @@ type Storage interface {
 	GetTeams(ctx context.Context) ([]*Team, error)
 
 	UpsertPlayer(ctx context.Context, player *Player) error
+
+	UpsertGame(ctx context.Context, game *Game) error
 }

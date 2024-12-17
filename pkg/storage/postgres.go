@@ -98,3 +98,27 @@ func (s *postgresStorage) UpsertPlayer(ctx context.Context, player *Player) erro
 		player.ESPNID)
 	return err
 }
+
+func (s *postgresStorage) UpsertGame(ctx context.Context, game *Game) error {
+	const query = `
+		INSERT INTO games (
+			week, season, home_team_id, away_team_id, game_date, dome
+		)
+		VALUES ($1, $2, $3, $4, $5, $6)
+		ON CONFLICT (week, season, home_team_id, away_team_id)
+		DO UPDATE SET
+			game_date = EXCLUDED.game_date,
+			dome = EXCLUDED.dome
+		RETURNING game_id`
+
+	err := s.db.QueryRowContext(ctx, query,
+		game.Week,
+		game.Season,
+		game.HomeTeamID,
+		game.AwayTeamID,
+		game.GameDate,
+		game.Dome,
+	).Scan(&game.ID)
+
+	return err
+}

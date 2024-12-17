@@ -93,3 +93,22 @@ func (a *ESPNActivities) GetPlayer(ctx context.Context, in GetPlayerRequest) (Ge
 		Player: player,
 	}, nil
 }
+
+type GetScheduleRequest struct {
+	Week   int
+	Season int
+}
+
+type GetScheduleResponse struct {
+	Schedule espnclient.ScheduleResponse
+}
+
+func (a *ESPNActivities) GetSchedule(ctx context.Context, in GetScheduleRequest) (GetScheduleResponse, error) {
+	schedule, err := a.client.GetSchedule(ctx, in.Week, in.Season)
+	if err != nil {
+		return GetScheduleResponse{}, fmt.Errorf("getting schedule: %w", err)
+	}
+	return GetScheduleResponse{
+		Schedule: schedule,
+	}, nil
+}

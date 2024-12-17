@@ -19,6 +19,7 @@ type Client interface {
 	GetTeams(ctx context.Context) (TeamsResponse, error)
 	GetTeam(ctx context.Context, teamID TeamID) (Team, error)
 	GetPlayer(ctx context.Context, playerID string) (Athlete, error)
+	GetSchedule(ctx context.Context, week int, season int) (ScheduleResponse, error)
 }
 
 func New(config ClientConfiguration) Client {
@@ -78,6 +79,15 @@ func (c *clientImpl) GetPlayer(ctx context.Context, playerID string) (Athlete, e
 		return Athlete{}, fmt.Errorf("getting player: %w", err)
 	}
 	return player, nil
+}
+
+func (c *clientImpl) GetSchedule(ctx context.Context, week int, season int) (ScheduleResponse, error) {
+	url := fmt.Sprintf("%s/scoreboard?week=%d&year=%d", c.siteAPIURL, week, season)
+	var schedule ScheduleResponse
+	if err := c.doHTTPRequest(ctx, url, http.MethodGet, &schedule); err != nil {
+		return ScheduleResponse{}, fmt.Errorf("getting schedule: %w", err)
+	}
+	return schedule, nil
 }
 
 func (c *clientImpl) doHTTPRequest(ctx context.Context, url string, method string, respDataPointer interface{}) error {
