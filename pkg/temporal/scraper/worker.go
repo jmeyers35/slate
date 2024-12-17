@@ -13,6 +13,7 @@ func InitWorker(w worker.Worker, storage storage.Storage) {
 	w.RegisterWorkflow(ScrapePlayersForTeam)
 	w.RegisterWorkflow(ScrapePlayer)
 	w.RegisterWorkflow(ScrapeSchedule)
+	w.RegisterWorkflow(BackfillSchedule)
 
 	nflClient := espnclient.NewNFL()
 	espnActivities := &ESPNActivities{
