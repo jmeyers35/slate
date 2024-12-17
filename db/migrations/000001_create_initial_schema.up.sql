@@ -25,7 +25,8 @@ CREATE TABLE games (
     dome BOOLEAN,
     temperature INTEGER,
     wind_speed INTEGER,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_game_constraint UNIQUE (week, season, home_team_id, away_team_id)
 );
 
 CREATE TABLE vegas_lines (

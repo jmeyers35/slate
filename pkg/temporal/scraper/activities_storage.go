@@ -71,10 +71,16 @@ func (a *StorageActivities) StoreGames(ctx context.Context, req StoreGamesReques
 		if err != nil {
 			return fmt.Errorf("getting home team: %w", err)
 		}
+		if homeTeam == nil {
+			return fmt.Errorf("home team with ESPN ID %s not found - ensure teams are bootstrapped first", game.HomeTeamID)
+		}
 		
 		awayTeam, err := a.Storage.GetTeamByESPNID(ctx, game.AwayTeamID)
 		if err != nil {
 			return fmt.Errorf("getting away team: %w", err)
+		}
+		if awayTeam == nil {
+			return fmt.Errorf("away team with ESPN ID %s not found - ensure teams are bootstrapped first", game.AwayTeamID)
 		}
 
 		// Update with internal IDs
