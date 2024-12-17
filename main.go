@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/jmeyers35/slate/config"
 	slatedb "github.com/jmeyers35/slate/db"
@@ -42,7 +43,11 @@ func main() {
 	}
 	storage := storage.NewPostgres(db)
 
-	oddsClient, err := oddsclient.New(oddsclient.Config{}) // TODO: actually initialize with API key, etc
+	oddsClient, err := oddsclient.New(oddsclient.Config{
+		Provider:  oddsclient.TheOdds,
+		APIKey:    appConfig.TheOddsAPIKey,
+		RateLimit: time.Second,
+	})
 	if err != nil {
 		logger.Error("creating odds client", zap.Error(err))
 		return

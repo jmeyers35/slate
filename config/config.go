@@ -18,6 +18,8 @@ type Config struct {
 
 	TemporalHostPort  string `envconfig:"TEMPORAL_HOSTPORT" default:"localhost:7233"`
 	TemporalNamespace string `envconfig:"TEMPORAL_NAMESPACE" default:"default"`
+
+	TheOddsAPIKey string `envconfig:"THEODDS_APIKEY"`
 }
 
 func (c Config) PostgresConnString() string {
