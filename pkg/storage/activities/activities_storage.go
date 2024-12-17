@@ -1,4 +1,4 @@
-package scraper
+package storage
 
 import (
 	"context"
@@ -43,7 +43,7 @@ type GetTeamsFromStorageResponse struct {
 	Teams []*storage.Team
 }
 
-func (a *StorageActivities) GetTeamsFromStorage(ctx context.Context, req GetTeamsRequest) (GetTeamsFromStorageResponse, error) {
+func (a *StorageActivities) GetTeamsFromStorage(ctx context.Context, req GetTeamsFromStorageRequest) (GetTeamsFromStorageResponse, error) {
 	teams, err := a.Storage.GetTeams(ctx)
 	if err != nil {
 		return GetTeamsFromStorageResponse{}, fmt.Errorf("getting teams: %w", err)
@@ -74,7 +74,7 @@ func (a *StorageActivities) StoreGames(ctx context.Context, req StoreGamesReques
 		if homeTeam == nil {
 			return fmt.Errorf("home team with ESPN ID %s not found - ensure teams are bootstrapped first", game.HomeTeamID)
 		}
-		
+
 		awayTeam, err := a.Storage.GetTeamByESPNID(ctx, game.AwayTeamID)
 		if err != nil {
 			return fmt.Errorf("getting away team: %w", err)

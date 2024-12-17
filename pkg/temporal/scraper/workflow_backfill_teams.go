@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	espnactivities "github.com/jmeyers35/slate/pkg/espn/activities"
 	espnclient "github.com/jmeyers35/slate/pkg/espn/client"
 	"go.temporal.io/sdk/workflow"
 )
@@ -11,14 +12,14 @@ import (
 type BackfillTeamsRequest struct{}
 
 func BackfillTeams(ctx workflow.Context, request BackfillTeamsRequest) error {
-	var espnActivities *ESPNActivities
+	var espnActivities *espnactivities.ESPNActivities
 
-	var resp GetTeamsResponse
+	var resp espnactivities.GetTeamsResponse
 	actx := workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
 		ScheduleToCloseTimeout: 1 * time.Minute,
 		StartToCloseTimeout:    10 * time.Second,
 	})
-	if err := workflow.ExecuteActivity(actx, espnActivities.GetTeamsFromESPN, GetTeamsRequest{}).Get(ctx, &resp); err != nil {
+	if err := workflow.ExecuteActivity(actx, espnActivities.GetTeamsFromESPN, espnactivities.GetTeamsRequest{}).Get(ctx, &resp); err != nil {
 		return fmt.Errorf("getting teams: %w", err)
 	}
 

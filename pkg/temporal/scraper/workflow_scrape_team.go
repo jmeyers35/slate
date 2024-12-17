@@ -5,7 +5,9 @@ import (
 	"time"
 
 	"github.com/jmeyers35/slate/pkg/converters"
+	espnactivities "github.com/jmeyers35/slate/pkg/espn/activities"
 	espnclient "github.com/jmeyers35/slate/pkg/espn/client"
+	storageactivities "github.com/jmeyers35/slate/pkg/storage/activities"
 	"go.temporal.io/sdk/workflow"
 )
 
@@ -22,21 +24,21 @@ func ScrapeNFLTeam(ctx workflow.Context, request ScrapeNFLTeamRequest) error {
 		StartToCloseTimeout:    5 * time.Second,
 	})
 
-	var espnActivities *ESPNActivities
-	req := GetTeamRequest{
+	var espnActivities *espnactivities.ESPNActivities
+	req := espnactivities.GetTeamRequest{
 		TeamID: request.TeamID,
 	}
 
-	var getTeamResponse GetTeamResponse
+	var getTeamResponse espnactivities.GetTeamResponse
 	if err := workflow.ExecuteActivity(actx, espnActivities.GetTeam, req).Get(ctx, &getTeamResponse); err != nil {
 		return fmt.Errorf("getting team: %w", err)
 	}
 
 	logger.Info("Got team", "team", getTeamResponse.Team)
 
-	var storageActivities *StorageActivities
+	var storageActivities *storageactivities.StorageActivities
 	converter := converters.ESPNAPIConverter{}
-	teamReq := UpsertTeamRequest{
+	teamReq := storageactivities.UpsertTeamRequest{
 		Team: converter.ConvertTeam(getTeamResponse.Team),
 	}
 	if err := workflow.ExecuteActivity(actx, storageActivities.UpsertTeam, teamReq).Get(ctx, nil); err != nil {

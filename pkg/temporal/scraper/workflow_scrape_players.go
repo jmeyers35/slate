@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	espnactivities "github.com/jmeyers35/slate/pkg/espn/activities"
 	"github.com/jmeyers35/slate/pkg/espn/client"
 	"go.temporal.io/sdk/workflow"
 	"go.uber.org/multierr"
@@ -15,14 +16,14 @@ type ScrapePlayersForTeamRequest struct {
 }
 
 func ScrapePlayersForTeam(ctx workflow.Context, request ScrapePlayersForTeamRequest) error {
-	var espnActivities *ESPNActivities
+	var espnActivities *espnactivities.ESPNActivities
 
-	var playersResponse GetPlayersForTeamResponse
+	var playersResponse espnactivities.GetPlayersForTeamResponse
 	actx := workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
 		ScheduleToCloseTimeout: 1 * time.Minute,
 		StartToCloseTimeout:    10 * time.Second,
 	})
-	if err := workflow.ExecuteActivity(actx, espnActivities.GetPlayersForTeam, GetPlayersForTeamRequest{
+	if err := workflow.ExecuteActivity(actx, espnActivities.GetPlayersForTeam, espnactivities.GetPlayersForTeamRequest{
 		TeamID: request.TeamID,
 	}).Get(ctx, &playersResponse); err != nil {
 		return fmt.Errorf("getting players for team: %w", err)

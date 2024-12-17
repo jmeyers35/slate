@@ -5,15 +5,16 @@ import (
 	"time"
 
 	"github.com/jmeyers35/slate/pkg/espn/client"
+	storageactivities "github.com/jmeyers35/slate/pkg/storage/activities"
 	"go.temporal.io/sdk/workflow"
 )
 
 type PlayerCoordinatorRequest struct{}
 
 func PlayerCoordinator(ctx workflow.Context, request PlayerCoordinatorRequest) error {
-	var storageActivities *StorageActivities
+	var storageActivities *storageactivities.StorageActivities
 
-	var getTeamsResp GetTeamsFromStorageResponse
+	var getTeamsResp storageactivities.GetTeamsFromStorageResponse
 	actx := workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
 		ScheduleToCloseTimeout: 1 * time.Minute,
 		StartToCloseTimeout:    30 * time.Second,

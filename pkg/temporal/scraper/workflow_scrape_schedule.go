@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	espnactivities "github.com/jmeyers35/slate/pkg/espn/activities"
+	storageactivities "github.com/jmeyers35/slate/pkg/storage/activities"
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
 )
@@ -28,10 +30,10 @@ func ScrapeSchedule(ctx workflow.Context, request ScrapeScheduleRequest) error {
 	}
 	actx := workflow.WithActivityOptions(ctx, activityOpts)
 
-	var espnActivities *ESPNActivities
+	var espnActivities *espnactivities.ESPNActivities
 
-	var scheduleResp GetScheduleResponse
-	err := workflow.ExecuteActivity(actx, espnActivities.GetSchedule, GetScheduleRequest{
+	var scheduleResp espnactivities.GetScheduleResponse
+	err := workflow.ExecuteActivity(actx, espnActivities.GetSchedule, espnactivities.GetScheduleRequest{
 		Week:   request.Week,
 		Season: request.Season,
 	}).Get(ctx, &scheduleResp)
@@ -39,9 +41,9 @@ func ScrapeSchedule(ctx workflow.Context, request ScrapeScheduleRequest) error {
 		return fmt.Errorf("executing get schedule activity: %w", err)
 	}
 
-	var storageActivities *StorageActivities
+	var storageActivities *storageactivities.StorageActivities
 
-	err = workflow.ExecuteActivity(actx, storageActivities.StoreGames, StoreGamesRequest{
+	err = workflow.ExecuteActivity(actx, storageActivities.StoreGames, storageactivities.StoreGamesRequest{
 		Schedule: scheduleResp.Schedule,
 		Week:     request.Week,
 		Season:   request.Season,
