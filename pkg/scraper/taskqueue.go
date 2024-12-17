@@ -1,4 +1,4 @@
-package temporal
+package scraper
 
 const (
 	DefaultTaskQueueName = "slate"
