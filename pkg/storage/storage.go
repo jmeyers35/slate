@@ -10,4 +10,7 @@ type Storage interface {
 	UpsertPlayer(ctx context.Context, player *Player) error
 
 	UpsertGame(ctx context.Context, game *Game) error
+
+	UpsertLine(ctx context.Context, line Line) error
+	GetGameIDByTeams(ctx context.Context, season, week int, homeTeam, awayTeam string) (string, error)
 }

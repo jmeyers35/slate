@@ -18,6 +18,7 @@ func InitWorker(w worker.Worker, storage storage.Storage, oddsClient oddsclient.
 	w.RegisterWorkflow(ScrapePlayer)
 	w.RegisterWorkflow(ScrapeSchedule)
 	w.RegisterWorkflow(BackfillSchedule)
+	w.RegisterWorkflow(ScrapeOdds)
 
 	nflClient := espnclient.NewNFL()
 	espnActivities := &espnactivities.ESPNActivities{
@@ -36,7 +37,7 @@ func InitWorker(w worker.Worker, storage storage.Storage, oddsClient oddsclient.
 	w.RegisterActivity(storageActivities.GetTeamByESPNID)
 	w.RegisterActivity(storageActivities.UpsertPlayer)
 	w.RegisterActivity(storageActivities.GetTeamsFromStorage)
-	w.RegisterActivity(storageActivities.StoreGames)
+	w.RegisterActivity(storageActivities.UpsertGame)
 
 	oddsActivities := &oddsactivities.OddsActivities{
 		Client: oddsClient,

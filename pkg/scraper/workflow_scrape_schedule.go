@@ -43,7 +43,7 @@ func ScrapeSchedule(ctx workflow.Context, request ScrapeScheduleRequest) error {
 
 	var storageActivities *storageactivities.StorageActivities
 
-	err = workflow.ExecuteActivity(actx, storageActivities.StoreGames, storageactivities.StoreGamesRequest{
+	err = workflow.ExecuteActivity(actx, storageActivities.UpsertGame, storageactivities.UpsertGameRequest{
 		Schedule: scheduleResp.Schedule,
 		Week:     request.Week,
 		Season:   request.Season,

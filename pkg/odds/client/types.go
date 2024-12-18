@@ -8,10 +8,10 @@ type GameLines struct {
 	GameID string
 	// ProviderID is the game ID from the odds provider
 	ProviderID string
-	// HomeTeamID is our internal team ID
-	HomeTeamID string
-	// AwayTeamID is our internal team ID
-	AwayTeamID string
+	// HomeTeamName is the name of the home team
+	HomeTeamName string
+	// AwayTeamName is the name of the away team
+	AwayTeamName string
 	// Timestamp indicates when these odds were captured
 	Timestamp time.Time
 

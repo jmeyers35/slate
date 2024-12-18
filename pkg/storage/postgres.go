@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"database/sql"
+	"fmt"
 )
 
 type postgresStorage struct {
@@ -111,14 +112,65 @@ func (s *postgresStorage) UpsertGame(ctx context.Context, game *Game) error {
 			dome = EXCLUDED.dome
 		RETURNING game_id`
 
-	err := s.db.QueryRowContext(ctx, query,
+	_, err := s.db.ExecContext(ctx, query,
 		game.Week,
 		game.Season,
 		game.HomeTeamID,
 		game.AwayTeamID,
 		game.GameDate,
 		game.Dome,
-	).Scan(&game.ID)
-
+	)
 	return err
+}
+
+func (s *postgresStorage) UpsertLine(ctx context.Context, line Line) error {
+	const query = `
+		INSERT INTO vegas_lines (
+			line_id, game_id, home_team_spread, over_under, home_team_total, away_team_total, last_updated
+		)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		ON CONFLICT (game_id)
+		DO UPDATE SET
+			home_team_spread = EXCLUDED.home_team_spread,
+			over_under = EXCLUDED.over_under,
+			home_team_total = EXCLUDED.home_team_total,
+			away_team_total = EXCLUDED.away_team_total,
+			last_updated = EXCLUDED.last_updated`
+
+	if _, err := s.db.ExecContext(ctx, query,
+		line.LineID,
+		line.GameID,
+		line.HomeSpread,
+		line.OverUnder,
+		line.HomeTeamTotal,
+		line.AwayTeamTotal,
+		line.LastUpdated,
+	); err != nil {
+		return fmt.Errorf("upserting game lines: %w", err)
+	}
+
+	return nil
+}
+
+func (s *postgresStorage) GetGameIDByTeams(ctx context.Context, season, week int, homeTeam, awayTeam string) (string, error) {
+	query := `
+		SELECT g.game_id
+		FROM games g
+		JOIN teams ht ON g.home_team_id = ht.team_id
+		JOIN teams at ON g.away_team_id = at.team_id
+		WHERE g.season = $1
+		AND g.week = $2
+		AND (
+			(ht.team_name = $3 AND at.team_name = $4)
+			OR 
+			(ht.team_code = $3 AND at.team_code = $4)
+		)`
+
+	var gameID string
+	err := s.db.QueryRowContext(ctx, query, season, week, homeTeam, awayTeam).Scan(&gameID)
+	if err != nil {
+		return "", fmt.Errorf("getting game ID: %w", err)
+	}
+
+	return gameID, nil
 }

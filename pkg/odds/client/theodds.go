@@ -6,20 +6,23 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
+	"golang.org/x/time/rate"
 )
 
 const (
 	theOddsBaseURL = "https://api.the-odds-api.com/"
+)
 
-	sportNFL = "americanfootball_nfl"
+const (
+	bookmakerDraftKings string = "draftkings"
 )
 
 type theOddsClient struct {
-	client    *http.Client
-	baseURL   string
-	apiKey    string
-	rateLimit time.Duration
-	lastCall  time.Time
+	client  *http.Client
+	baseURL string
+	apiKey  string
+	limiter *rate.Limiter
 }
 
 // TheOdds API response types
@@ -62,20 +65,18 @@ type outcome struct {
 }
 
 func newTheOddsClient(config Config) (*theOddsClient, error) {
+	limiter := rate.NewLimiter(rate.Every(config.RateLimit), 1)
+
 	return &theOddsClient{
-		client:    &http.Client{Timeout: 10 * time.Second},
-		baseURL:   theOddsBaseURL,
-		apiKey:    config.APIKey,
-		rateLimit: config.RateLimit,
+		client:  &http.Client{Timeout: 10 * time.Second},
+		baseURL: theOddsBaseURL,
+		apiKey:  config.APIKey,
+		limiter: limiter,
 	}, nil
 }
 
 func (c *theOddsClient) GetCurrentLines(ctx context.Context, season int, week int) ([]GameLines, error) {
-	// Respect rate limiting
-	if time.Since(c.lastCall) < c.rateLimit {
-		time.Sleep(c.rateLimit - time.Since(c.lastCall))
-	}
-
+	c.limiter.Wait(ctx)
 	// Make request to The Odds API
 	url := fmt.Sprintf("%s/v4/sports/americanfootball_nfl/odds/?apikey=%s&regions=us&markets=spreads,totals,h2h",
 		c.baseURL, c.apiKey)
@@ -107,10 +108,12 @@ func (c *theOddsClient) GetCurrentLines(ctx context.Context, season int, week in
 		}
 
 		gl := GameLines{
-			ProviderID:  game.ID,
-			Timestamp:   time.Now(),
-			Source:      bookmakerDraftKings,
-			LastUpdated: dkOdds.LastUpdate,
+			ProviderID:   game.ID,
+			HomeTeamName: game.HomeTeam,
+			AwayTeamName: game.AwayTeam,
+			Timestamp:    time.Now(),
+			Source:       bookmakerDraftKings,
+			LastUpdated:  dkOdds.LastUpdate,
 		}
 
 		// Parse markets for spread, moneyline, and totals
@@ -135,8 +138,6 @@ func (c *theOddsClient) GetCurrentLines(ctx context.Context, season int, week in
 
 		lines = append(lines, gl)
 	}
-
-	c.lastCall = time.Now()
 	return lines, nil
 }
 
@@ -151,10 +152,6 @@ func (c *theOddsClient) GetGameID(ctx context.Context, internalGameID string) (s
 	// Could store mappings in database or try to match based on team names/time
 	return "", fmt.Errorf("game ID mapping not implemented")
 }
-
-const (
-	bookmakerDraftKings string = "draftkings"
-)
 
 func findBookmaker(bookmakers []bookmaker, key string) *bookmaker {
 	for _, b := range bookmakers {
