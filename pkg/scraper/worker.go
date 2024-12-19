@@ -45,6 +45,5 @@ func InitWorker(w worker.Worker, storage storage.Storage, oddsClient oddsclient.
 		Client: oddsClient,
 	}
 	w.RegisterActivity(oddsActivities.GetCurrentLines)
-	w.RegisterActivity(oddsActivities.GetGameID)
 	w.RegisterActivity(oddsActivities.GetLineHistory)
 }

@@ -31,25 +31,6 @@ func (a *OddsActivities) GetCurrentLines(ctx context.Context, in GetCurrentLines
 	}, nil
 }
 
-type GetGameIDRequest struct {
-	InternalGameID string
-}
-
-type GetGameIDResponse struct {
-	ProviderGameID string
-}
-
-func (a *OddsActivities) GetGameID(ctx context.Context, in GetGameIDRequest) (GetGameIDResponse, error) {
-	providerID, err := a.Client.GetGameID(ctx, in.InternalGameID)
-	if err != nil {
-		return GetGameIDResponse{}, fmt.Errorf("getting provider game ID: %w", err)
-	}
-
-	return GetGameIDResponse{
-		ProviderGameID: providerID,
-	}, nil
-}
-
 type GetLineHistoryRequest struct {
 	GameID string
 }

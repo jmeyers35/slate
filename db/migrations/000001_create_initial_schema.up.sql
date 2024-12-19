@@ -32,6 +32,7 @@ CREATE TABLE games (
 CREATE TABLE vegas_lines (
     line_id SERIAL PRIMARY KEY,
     game_id INTEGER REFERENCES games(game_id),
+    bookmaker VARCHAR(50),
     home_team_spread DECIMAL(4,1),
     over_under DECIMAL(4,1),
     home_team_total DECIMAL(4,2),

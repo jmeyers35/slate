@@ -163,13 +163,6 @@ func (c *theOddsClient) GetLineHistory(ctx context.Context, gameID string) ([]Ga
 	return nil, fmt.Errorf("line history not supported by The Odds API free tier")
 }
 
-// GetGameID attempts to map our internal game ID to The Odds API game ID
-func (c *theOddsClient) GetGameID(ctx context.Context, internalGameID string) (string, error) {
-	// This would need to be implemented based on how we want to handle ID mapping
-	// Could store mappings in database or try to match based on team names/time
-	return "", fmt.Errorf("game ID mapping not implemented")
-}
-
 func findBookmaker(bookmakers []bookmaker, key string) *bookmaker {
 	for _, b := range bookmakers {
 		if b.Key == key {
