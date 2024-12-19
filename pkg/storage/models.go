@@ -29,7 +29,7 @@ type Game struct {
 
 type Line struct {
 	LineID        string
-	GameID        string
+	GameID        int
 	ProviderID    string
 	HomeSpread    float64
 	OverUnder     float64

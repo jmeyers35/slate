@@ -5,7 +5,7 @@ import "time"
 // GameLines represents odds data for a single game
 type GameLines struct {
 	// GameID is our internal game ID that maps to the games table
-	GameID string
+	GameID int
 	// ProviderID is the game ID from the odds provider
 	ProviderID string
 	// HomeTeamName is the name of the home team
@@ -33,4 +33,7 @@ type GameLines struct {
 	Source string
 	// LastUpdated indicates when the lines were last updated at the source
 	LastUpdated time.Time
+
+	// GameTime is the game start time according to the bookmaker. We need this to correlate odds with games in our database.
+	GameTime time.Time
 }

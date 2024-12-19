@@ -4,6 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
+
+	"go.uber.org/zap"
 )
 
 type postgresStorage struct {
@@ -126,9 +129,9 @@ func (s *postgresStorage) UpsertGame(ctx context.Context, game *Game) error {
 func (s *postgresStorage) UpsertLine(ctx context.Context, line Line) error {
 	const query = `
 		INSERT INTO vegas_lines (
-			line_id, game_id, home_team_spread, over_under, home_team_total, away_team_total, last_updated
+			game_id, home_team_spread, over_under, home_team_total, away_team_total, last_updated
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		VALUES ($1, $2, $3, $4, $5, $6)
 		ON CONFLICT (game_id)
 		DO UPDATE SET
 			home_team_spread = EXCLUDED.home_team_spread,
@@ -137,39 +140,38 @@ func (s *postgresStorage) UpsertLine(ctx context.Context, line Line) error {
 			away_team_total = EXCLUDED.away_team_total,
 			last_updated = EXCLUDED.last_updated`
 
-	if _, err := s.db.ExecContext(ctx, query,
-		line.LineID,
+	_, err := s.db.ExecContext(ctx, query,
 		line.GameID,
 		line.HomeSpread,
 		line.OverUnder,
 		line.HomeTeamTotal,
 		line.AwayTeamTotal,
 		line.LastUpdated,
-	); err != nil {
-		return fmt.Errorf("upserting game lines: %w", err)
-	}
-
-	return nil
+	)
+	return err
 }
 
-func (s *postgresStorage) GetGameIDByTeams(ctx context.Context, season, week int, homeTeam, awayTeam string) (string, error) {
+func (s *postgresStorage) GetGameIDByTeams(ctx context.Context, season int, homeTeam, awayTeam string, start time.Time) (int, error) {
 	query := `
 		SELECT g.game_id
 		FROM games g
 		JOIN teams ht ON g.home_team_id = ht.team_id
 		JOIN teams at ON g.away_team_id = at.team_id
 		WHERE g.season = $1
-		AND g.week = $2
+		AND g.game_date = $2
 		AND (
 			(ht.team_name = $3 AND at.team_name = $4)
 			OR 
 			(ht.team_code = $3 AND at.team_code = $4)
 		)`
 
-	var gameID string
-	err := s.db.QueryRowContext(ctx, query, season, week, homeTeam, awayTeam).Scan(&gameID)
+	var gameID int
+	err := s.db.QueryRowContext(ctx, query, season, start, homeTeam, awayTeam).Scan(&gameID)
 	if err != nil {
-		return "", fmt.Errorf("getting game ID: %w", err)
+		ll, _ := zap.NewProduction()
+
+		ll.Error("error getting game ID", zap.Error(err), zap.Int("season", season), zap.String("homeTeam", homeTeam), zap.String("awayTeam", awayTeam), zap.String("start", start.String()))
+		return 0, fmt.Errorf("getting game ID: %w", err)
 	}
 
 	return gameID, nil

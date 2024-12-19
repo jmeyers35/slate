@@ -1,6 +1,9 @@
 package storage
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
 type Storage interface {
 	UpsertTeam(ctx context.Context, team *Team) error
@@ -12,5 +15,6 @@ type Storage interface {
 	UpsertGame(ctx context.Context, game *Game) error
 
 	UpsertLine(ctx context.Context, line Line) error
-	GetGameIDByTeams(ctx context.Context, season, week int, homeTeam, awayTeam string) (string, error)
+
+	GetGameIDByTeams(ctx context.Context, season int, homeTeam, awayTeam string, start time.Time) (int, error)
 }

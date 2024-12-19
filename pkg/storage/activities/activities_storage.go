@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jmeyers35/slate/pkg/odds/client"
 	"go.uber.org/multierr"
 
 	"github.com/jmeyers35/slate/pkg/converters"
@@ -99,43 +98,37 @@ func (a *StorageActivities) UpsertGame(ctx context.Context, req UpsertGameReques
 
 // UpsertLinesRequest is the request for storing a vegas line for a game
 type UpsertLinesRequest struct {
-	Lines  []client.GameLines
-	Week   int
-	Season int
+	Lines []storage.Line
 }
 
 // UpsertLine stores game lines in the database
 func (a *StorageActivities) UpsertLine(ctx context.Context, req UpsertLinesRequest) error {
 	var storeErrs error
 	for _, line := range req.Lines {
-		// Get internal game ID based on season, week, and team matchup
-		gameID, err := a.Storage.GetGameIDByTeams(ctx, req.Season, req.Week, line.HomeTeamName, line.AwayTeamName)
-		if err != nil {
-			return fmt.Errorf("getting game ID: %w", err)
-		}
-
-		storageLine := storage.Line{
-			GameID:        gameID,
-			ProviderID:    line.ProviderID,
-			HomeSpread:    line.HomeSpread,
-			OverUnder:     line.OverUnder,
-			HomeMoneyline: line.HomeMoneyline,
-			AwayMoneyline: line.AwayMoneyline,
-			LastUpdated:   line.LastUpdated,
-			CreatedAt:     time.Now(),
-		}
-
-		// Set team totals if available
-		if line.HomeTeamTotal != nil {
-			storageLine.HomeTeamTotal = *line.HomeTeamTotal
-		}
-		if line.AwayTeamTotal != nil {
-			storageLine.AwayTeamTotal = *line.AwayTeamTotal
-		}
-
-		if err := a.Storage.UpsertLine(ctx, storageLine); err != nil {
-			storeErrs = multierr.Append(storeErrs, fmt.Errorf("upserting game line: %w", err))
+		if err := a.Storage.UpsertLine(ctx, line); err != nil {
+			storeErrs = multierr.Append(storeErrs, fmt.Errorf("upserting game line %v: %w", line, err))
 		}
 	}
 	return storeErrs
+}
+
+type GetGameIDByTeamsRequest struct {
+	Season   int
+	HomeTeam string
+	AwayTeam string
+	Start    time.Time
+}
+
+type GetGameIDByTeamsResponse struct {
+	GameID int
+}
+
+func (a *StorageActivities) GetGameIDByTeams(ctx context.Context, req GetGameIDByTeamsRequest) (GetGameIDByTeamsResponse, error) {
+	gameID, err := a.Storage.GetGameIDByTeams(ctx, req.Season, req.HomeTeam, req.AwayTeam, req.Start)
+	if err != nil {
+		return GetGameIDByTeamsResponse{}, fmt.Errorf("getting game ID: %w", err)
+	}
+	return GetGameIDByTeamsResponse{
+		GameID: gameID,
+	}, nil
 }

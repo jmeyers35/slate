@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
@@ -64,6 +65,16 @@ type outcome struct {
 	Point float64 `json:"point,omitempty"`
 }
 
+// roundToNearest5Minutes rounds a time to the nearest 5 minute interval
+func roundToNearest5Minutes(t time.Time) time.Time {
+	minutes := t.Minute()
+	// Add 2 to shift the boundary by half the rounding interval (5/2 = 2.5, truncated to 2 for integer math)
+	// Using integer division will effectively round to the nearest multiple of 5.
+	rounded := ((minutes + 2) / 5) * 5
+
+	return t.Truncate(time.Hour).Add(time.Duration(rounded) * time.Minute)
+}
+
 func newTheOddsClient(config Config) (*theOddsClient, error) {
 	limiter := rate.NewLimiter(rate.Every(config.RateLimit), 1)
 
@@ -78,7 +89,7 @@ func newTheOddsClient(config Config) (*theOddsClient, error) {
 func (c *theOddsClient) GetCurrentLines(ctx context.Context, season int, week int) ([]GameLines, error) {
 	c.limiter.Wait(ctx)
 	// Make request to The Odds API
-	url := fmt.Sprintf("%s/v4/sports/americanfootball_nfl/odds/?apikey=%s&regions=us&markets=spreads,totals,h2h",
+	url := fmt.Sprintf("%s/v4/sports/americanfootball_nfl/odds/?apiKey=%s&regions=us&markets=spreads,totals,h2h&oddsFormat=american",
 		c.baseURL, c.apiKey)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
@@ -92,16 +103,21 @@ func (c *theOddsClient) GetCurrentLines(ctx context.Context, season int, week in
 	}
 	defer resp.Body.Close()
 
-	var oddsResp oddsResponse
+	// API returns an array of game odds directly
+	var oddsResp []gameOdds
 	if err := json.NewDecoder(resp.Body).Decode(&oddsResp); err != nil {
 		return nil, fmt.Errorf("decoding response: %w", err)
 	}
 
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("non-200 status: %d, body: %s", resp.StatusCode, body)
+	}
+
 	// Convert response to our GameLines type
 	var lines []GameLines
-	for _, game := range oddsResp.Data {
+	for _, game := range oddsResp {
 		// For now, we'll just use DraftKings odds if available
-		// TODO: aggregate multiple bookmakers
 		dkOdds := findBookmaker(game.Bookmakers, bookmakerDraftKings)
 		if dkOdds == nil {
 			continue
@@ -111,6 +127,7 @@ func (c *theOddsClient) GetCurrentLines(ctx context.Context, season int, week in
 			ProviderID:   game.ID,
 			HomeTeamName: game.HomeTeam,
 			AwayTeamName: game.AwayTeam,
+			GameTime:     roundToNearest5Minutes(game.CommenceTime),
 			Timestamp:    time.Now(),
 			Source:       bookmakerDraftKings,
 			LastUpdated:  dkOdds.LastUpdate,

@@ -22,8 +22,8 @@ type StoreGameLinesRequest struct {
 func (a *StorageActivities) StoreGameLines(ctx context.Context, req StoreGameLinesRequest) error {
 	var err error
 	for _, line := range req.Lines {
-		// Get internal game ID based on season, week, and team IDs
-		gameID, err := a.Storage.GetGameIDByTeams(ctx, req.Season, req.Week, line.HomeTeamName, line.AwayTeamName)
+
+		gameID, err := a.Storage.GetGameIDByTeams(ctx, req.Season, line.HomeTeamName, line.AwayTeamName, line.GameTime)
 		if err != nil {
 			return fmt.Errorf("getting game ID: %w", err)
 		}

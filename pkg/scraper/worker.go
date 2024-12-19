@@ -38,6 +38,8 @@ func InitWorker(w worker.Worker, storage storage.Storage, oddsClient oddsclient.
 	w.RegisterActivity(storageActivities.UpsertPlayer)
 	w.RegisterActivity(storageActivities.GetTeamsFromStorage)
 	w.RegisterActivity(storageActivities.UpsertGame)
+	w.RegisterActivity(storageActivities.UpsertLine)
+	w.RegisterActivity(storageActivities.GetGameIDByTeams)
 
 	oddsActivities := &oddsactivities.OddsActivities{
 		Client: oddsClient,

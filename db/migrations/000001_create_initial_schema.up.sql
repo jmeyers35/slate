@@ -34,10 +34,11 @@ CREATE TABLE vegas_lines (
     game_id INTEGER REFERENCES games(game_id),
     home_team_spread DECIMAL(4,1),
     over_under DECIMAL(4,1),
-    home_team_total DECIMAL(4,1),
-    away_team_total DECIMAL(4,1),
+    home_team_total DECIMAL(4,2),
+    away_team_total DECIMAL(4,2),
     last_updated TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_vegas_line_constraint UNIQUE (game_id)
 );
 
 CREATE TABLE draftkings_contests (
